@@ -1,198 +1,225 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1020">
-<title>Medidor Pro Premium</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Medidor Pro</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#fff;background:linear-gradient(145deg,#050817,#101c3b 55%,#32105b);min-height:100vh}
-.app{max-width:760px;margin:auto;padding:14px}.top{display:flex;align-items:center;gap:12px;padding:8px 2px 16px}.logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,#00d9ff,#7657ff);box-shadow:0 8px 30px #00cfff33}.top h1{margin:0;font-size:25px}.top p{margin:2px 0;color:#aeb9d7;font-size:13px}.premium{margin-left:auto;font-size:11px;padding:7px 9px;border-radius:10px;background:linear-gradient(135deg,#ffd45a,#ff8a00);color:#301b00;font-weight:900}
-.card{background:#ffffff0e;border:1px solid #ffffff1d;border-radius:20px;padding:16px;margin-bottom:13px;box-shadow:0 14px 35px #0003;backdrop-filter:blur(10px)}h2{font-size:17px;margin:0 0 8px}.muted{color:#aeb9d7;font-size:13px}
-.camera{position:relative;overflow:hidden;border-radius:16px;background:#02050c;aspect-ratio:16/10}.camera video{width:100%;height:100%;object-fit:cover;display:block}.camera canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.cameraHelp{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#000b;padding:7px 10px;border-radius:10px;font-size:12px;white-space:nowrap}.status{position:absolute;top:9px;left:9px;background:#000b;padding:7px 10px;border-radius:10px;font-size:12px}.dot{color:#38f6ae}
-button{border:0;border-radius:12px;padding:13px 12px;color:#fff;font-weight:800;font-size:14px;background:#ffffff15;cursor:pointer}button:disabled{opacity:.45}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}.primary{background:linear-gradient(135deg,#00b8d9,#2563eb)}.premiumBtn{background:linear-gradient(135deg,#8b5cf6,#ec4899)}.green{background:#159f70}.danger{background:#8d2447}.wide{width:100%;margin-top:10px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:12px;color:#cbd5e1}input,select{width:100%;margin-top:6px;padding:12px;border-radius:11px;border:1px solid #ffffff22;background:#070c1c;color:#fff;outline:none}input:focus{border-color:#00d9ff}
-.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:11px 0}.mode.active{background:linear-gradient(135deg,#4f46e5,#0891b2)}
-.cal{margin-top:10px;padding:11px;border-radius:11px;background:#06182a;color:#68eaff;font-size:13px}.result{text-align:center;margin-top:12px;padding:16px;border-radius:16px;background:linear-gradient(135deg,#071a31,#241044);border:1px solid #ffffff12}.result span{color:#aeb9d7;font-size:13px}.result strong{display:block;font-size:38px;color:#65ebff;margin-top:3px}.history .item{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #ffffff12;font-size:13px}.head{display:flex;justify-content:space-between;align-items:center}.link{background:none;color:#ff91b5;padding:3px}.tips{padding-left:18px;color:#c6cee4;font-size:13px;line-height:1.6}footer{text-align:center;color:#7783a8;font-size:11px;padding:8px}
-@media(max-width:520px){.grid{grid-template-columns:1fr}.camera{aspect-ratio:4/3}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0b1020;color:white;padding:15px}
+.app{max-width:760px;margin:auto}
+h1{margin:5px 0}
+p{color:#bbb}
+.card{background:#18213a;border-radius:16px;padding:15px;margin:12px 0}
+.camera{position:relative;background:#000;border-radius:12px;overflow:hidden}
+video{width:100%;display:block}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+button,input,select{width:100%;padding:13px;margin:6px 0;border:0;border-radius:10px;font-size:16px}
+button{background:#1976d2;color:white;font-weight:bold}
+button:disabled{opacity:.5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.result{font-size:28px;text-align:center;padding:18px;background:#0b1020;border-radius:12px}
+.ok{color:#5cff9d}
+.small{font-size:14px;color:#aaa}
 </style>
 </head>
 <body>
 <div class="app">
-<header class="top">
-  <div class="logo">📏</div>
-  <div><h1>Medidor Pro</h1><p>Medição por câmera • Premium</p></div>
-  <div class="premium">PREMIUM</div>
-</header>
 
-<section class="card">
-  <div class="camera">
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="overlay"></canvas>
-    <div id="status" class="status">Câmera desligada</div>
-    <div id="cameraHelp">Aponte a câmera para o objeto</div>
-  </div>
-  <div class="row">
-    <button id="start" class="primary">📷 Abrir câmera</button>
-    <button id="stop">⏹ Parar</button>
-  </div>
-  <p class="muted">Use boa iluminação e mantenha a referência e o objeto no mesmo plano.</p>
-</section>
+<h1>📏 Medidor Pro</h1>
+<p>Meça objetos usando a câmera do celular.</p>
 
-<section class="card">
-<h2>⚙️ Calibração avançada</h2>
-<p class="muted">Use uma régua ou referência conhecida. Para maior precisão, preencha a distância em pixels obtida pela linha de referência.</p>
+<div class="card">
+<div class="camera">
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+</div>
+
 <div class="grid">
-<label>Referência (mm)<input id="refMm" type="number" value="100" min="0.1" step="0.1"></label>
-<label>Referência (pixels)<input id="refPx" type="number" placeholder="Ex.: 500" min="1" step="1"></label>
+<button id="start">📷 Abrir câmera</button>
+<button id="stop">⏹ Parar</button>
 </div>
-<button id="calibrate" class="premiumBtn wide">🎯 Calibrar escala</button>
-<div id="cal" class="cal">Escala não calibrada</div>
-</section>
-
-<section class="card">
-<h2>📐 Medição</h2>
-<div class="modes">
-<button class="mode active" data-mode="Largura">↔️ Largura</button>
-<button class="mode" data-mode="Altura">↕️ Altura</button>
-<button class="mode" data-mode="Comprimento">📏 Comprimento</button>
 </div>
-<div class="grid">
-<label>Distância do objeto (pixels)<input id="objPx" type="number" placeholder="Ex.: 800" min="0" step="1"></label>
-<label>Precisão exibida
-<select id="precision"><option value="1">0,1 mm</option><option value="0.01">0,01 mm</option></select></label>
+
+<div class="card">
+<h2>1️⃣ Calibração</h2>
+<p>Coloque uma régua na câmera e informe o tamanho conhecido.</p>
+
+<input id="ref" type="number" placeholder="Tamanho da régua em mm">
+
+<button id="calibrate">📐 Calibrar</button>
+
+<p id="status">Toque em dois pontos da régua.</p>
 </div>
-<button id="measure" class="primary wide">📏 Calcular com calibração</button>
-<div class="result"><span id="modeLabel">Largura</span><strong id="result">—</strong></div>
-<button id="save" class="green wide" disabled>💾 Salvar medida</button>
-</section>
 
-<section class="card">
-<h2>🔎 Recursos Premium</h2>
-<ul class="tips">
-<li>Sem anúncios nesta versão.</li>
-<li>Calibração por referência para converter pixels em milímetros.</li>
-<li>Exibição com ajuste de casas decimais.</li>
-<li>Histórico salvo no próprio aparelho.</li>
-<li>Câmera traseira preferida em celulares compatíveis.</li>
-</ul>
-</section>
+<div class="card">
+<h2>2️⃣ Medir</h2>
 
-<section class="card">
-<div class="head"><h2>🕘 Histórico</h2><button id="clear" class="link">Limpar</button></div>
-<div id="history" class="history"></div>
-</section>
+<button id="measure">📏 Medir objeto</button>
 
-<footer>Medidor Pro Premium • A precisão real depende da câmera, foco, perspectiva, distância e calibração.</footer>
+<div class="result" id="result">0,00 mm</div>
+
+<p class="small">
+Depois de calibrar, toque em dois pontos do objeto para medir.
+</p>
+</div>
+
 </div>
 
 <script>
-const $=id=>document.getElementById(id);
-let stream=null,scale=0,mode="Largura",last=null;
+const video=document.getElementById("video");
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+const start=document.getElementById("start");
+const stop=document.getElementById("stop");
+const ref=document.getElementById("ref");
+const calibrate=document.getElementById("calibrate");
+const measure=document.getElementById("measure");
+const status=document.getElementById("status");
+const result=document.getElementById("result");
 
-function render(){
- const a=JSON.parse(localStorage.getItem("medidorPremium")||"[]");
- $("history").innerHTML=a.length?a.map(x=>`<div class="item"><span>${x.mode}<br><small>${x.date}</small></span><b>${x.mm.toFixed(x.dec)} mm</b></div>`).join(""):'<p class="muted">Nenhuma medida salva.</p>';
+let stream=null;
+let points=[];
+let scale=null;
+let mode="calibrate";
+
+start.onclick=async()=>{
+try{
+stream=await navigator.mediaDevices.getUserMedia({
+video:{facingMode:"environment"},
+audio:false
+});
+video.srcObject=stream;
+start.disabled=true;
+stop.disabled=false;
+status.textContent="Câmera aberta. Coloque a régua.";
+resizeCanvas();
+}catch(e){
+alert("Não foi possível abrir a câmera.");
 }
-async function startCamera(){
- try{
-  if(!window.isSecureContext){
-   throw new Error("secure");
-  }
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-   throw new Error("unsupported");
-  }
-
-  // Tenta primeiro a câmera traseira; se o aparelho não aceitar,
-  // tenta uma configuração mais simples.
-  let constraints=[
-   {video:{facingMode:{exact:"environment"},width:{ideal:1920},height:{ideal:1080}},audio:false},
-   {video:{facingMode:"environment"},audio:false},
-   {video:true,audio:false}
-  ];
-
-  let lastError;
-  for(const c of constraints){
-   try{
-    stream=await navigator.mediaDevices.getUserMedia(c);
-    break;
-   }catch(e){lastError=e;}
-  }
-
-  if(!stream) throw lastError || new Error("camera");
-
-  $("video").srcObject=stream;
-  await $("video").play();
-
-  $("status").innerHTML='<span class="dot">●</span> Câmera ativa';
-  $("start").disabled=true;
-  $("stop").disabled=false;
-  $("cameraHelp").style.display="block";
-  drawOverlay();
- }catch(e){
-  $("status").textContent="Câmera bloqueada";
-  let msg="Não foi possível abrir a câmera.";
-  if(location.protocol!=="https:" && location.hostname!=="localhost" && location.hostname!=="127.0.0.1"){
-   msg+=" Abra o site por HTTPS. Um arquivo HTML aberto diretamente pelo celular pode bloquear a câmera.";
-  }else if(e && (e.name==="NotAllowedError" || e.name==="PermissionDeniedError")){
-   msg+=" Autorize a câmera nas permissões do navegador.";
-  }else if(e && e.name==="NotFoundError"){
-   msg+=" Nenhuma câmera foi encontrada.";
-  }else if(e && e.name==="NotReadableError"){
-   msg+=" A câmera pode estar sendo usada por outro aplicativo.";
-  }
-  alert(msg);
- }
-}
-
-$("start").onclick=startCamera;
-
-$("stop").onclick=()=>{
- if(stream) stream.getTracks().forEach(t=>t.stop());
- stream=null;
- $("video").srcObject=null;
- $("status").textContent="Câmera desligada";
- $("start").disabled=false;
- $("stop").disabled=true;
- $("cameraHelp").style.display="none";
 };
 
-function drawOverlay(){
- const v=$("video"), c=$("overlay");
- if(!v.videoWidth)return;
- c.width=v.videoWidth;c.height=v.videoHeight;
- const ctx=c.getContext("2d");
- ctx.clearRect(0,0,c.width,c.height);
-
- // Linha central para ajudar no enquadramento.
- ctx.strokeStyle="#00e5ff";
- ctx.lineWidth=Math.max(2,c.width/500);
- ctx.setLineDash([10,8]);
- ctx.beginPath();
- ctx.moveTo(c.width*.15,c.height*.5);
- ctx.lineTo(c.width*.85,c.height*.5);
- ctx.stroke();
- ctx.setLineDash([]);
-
- requestAnimationFrame(drawOverlay);
+stop.onclick=()=>{
+if(stream){
+stream.getTracks().forEach(t=>t.stop());
+stream=null;
+video.srcObject=null;
 }
-$("calibrate").onclick=()=>{
- const mm=+$("refMm").value,px=+$("refPx").value;
- if(mm>0&&px>0){scale=mm/px;$("cal").textContent=`Calibrado: 1 px = ${scale.toFixed(6)} mm • ${px} px = ${mm} mm`}
- else alert("Informe os dois valores da referência.");
+start.disabled=false;
+points=[];
+clearCanvas();
 };
-document.querySelectorAll(".mode").forEach(b=>b.onclick=()=>{document.querySelectorAll(".mode").forEach(x=>x.classList.remove("active"));b.classList.add("active");mode=b.dataset.mode;$("modeLabel").textContent=mode});
-$("measure").onclick=()=>{
- const px=+$("objPx").value;
- if(!scale)return alert("Calibre primeiro.");
- if(!(px>=0))return alert("Informe a distância em pixels.");
- const mm=px*scale,dec=+$("precision").value==.01?2:1;
- last={mode,mm,dec,date:new Date().toLocaleString("pt-BR")};
- $("result").textContent=mm.toFixed(dec)+" mm";$("save").disabled=false;
+
+video.onloadedmetadata=resizeCanvas;
+window.onresize=resizeCanvas;
+
+function resizeCanvas(){
+if(video.videoWidth){
+canvas.width=video.videoWidth;
+canvas.height=video.videoHeight;
+draw();
+}
+}
+
+function clearCanvas(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+function distance(a,b){
+return Math.hypot(b.x-a.x,b.y-a.y);
+}
+
+function draw(){
+clearCanvas();
+
+if(points.length>0){
+ctx.fillStyle="red";
+points.forEach(p=>{
+ctx.beginPath();
+ctx.arc(p.x,p.y,12,0,Math.PI*2);
+ctx.fill();
+});
+}
+
+if(points.length===2){
+ctx.strokeStyle="red";
+ctx.lineWidth=5;
+ctx.beginPath();
+ctx.moveTo(points[0].x,points[0].y);
+ctx.lineTo(points[1].x,points[1].y);
+ctx.stroke();
+}
+}
+
+canvas.addEventListener("pointerdown",e=>{
+if(!video.videoWidth)return;
+
+const r=canvas.getBoundingClientRect();
+
+const x=(e.clientX-r.left)*canvas.width/r.width;
+const y=(e.clientY-r.top)*canvas.height/r.height;
+
+if(points.length>=2)points=[];
+
+points.push({x,y});
+draw();
+
+if(points.length===2){
+const px=distance(points[0],points[1]);
+
+if(mode==="calibrate"){
+const mm=parseFloat(ref.value);
+
+if(!mm||mm<=0){
+alert("Informe primeiro o tamanho conhecido em mm.");
+points=[];
+draw();
+return;
+}
+
+scale=mm/px;
+
+status.innerHTML=
+"✅ Calibrado: "+scale.toFixed(4)+" mm por pixel";
+
+mode="measure";
+}else{
+if(!scale){
+alert("Calibre primeiro.");
+return;
+}
+
+const mm=px*scale;
+
+result.textContent=mm.toFixed(2)+" mm";
+status.textContent="✅ Medição concluída";
+}
+
+points=[];
+draw();
+}
+});
+
+calibrate.onclick=()=>{
+mode="calibrate";
+points=[];
+result.textContent="0,00 mm";
+status.textContent="Agora toque nos dois pontos da régua.";
+draw();
 };
-$("save").onclick=()=>{if(!last)return;const a=JSON.parse(localStorage.getItem("medidorPremium")||"[]");a.unshift(last);localStorage.setItem("medidorPremium",JSON.stringify(a.slice(0,50)));render()};
-$("clear").onclick=()=>{localStorage.removeItem("medidorPremium");render()};
-render();
+
+measure.onclick=()=>{
+if(!scale){
+alert("Primeiro faça a calibração com uma régua.");
+return;
+}
+
+mode="measure";
+points=[];
+status.textContent="Agora toque nos dois pontos do objeto.";
+draw();
+};
 </script>
+
 </body>
 </html>
