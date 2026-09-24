@@ -1,0 +1,149 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.app {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 18px;
+}
+
+header {
+  text-align: center;
+  padding: 10px 0 18px;
+}
+
+header h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+header p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.card, .ad-box {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.07);
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.premium {
+  border: 2px solid #111827;
+}
+
+.badge {
+  display: inline-block;
+  background: #111827;
+  color: white;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+button {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 12px;
+  background: #111827;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+video {
+  display: block;
+  width: 100%;
+  min-height: 220px;
+  max-height: 55vh;
+  object-fit: cover;
+  background: #111827;
+  border-radius: 12px;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.note, small, #calibrationStatus, #resultInfo {
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+.ad-box {
+  text-align: center;
+  border: 1px dashed #9ca3af;
+  background: #fafafa;
+}
+
+.ad-box > span {
+  font-size: 11px;
+  font-weight: bold;
+  color: #6b7280;
+}
+
+.ad-placeholder {
+  min-height: 80px;
+  display: grid;
+  place-items: center;
+  color: #9ca3af;
+}
+
+.result {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  justify-content: center;
+  padding: 15px;
+  border-radius: 12px;
+  background: #f3f4f6;
+}
+
+#resultValue {
+  font-size: 42px;
+  font-weight: bold;
+}
+
+@media (max-width: 480px) {
+  .app { padding: 12px; }
+  header h1 { font-size: 26px; }
+  .controls { grid-template-columns: 1fr; }
+}
