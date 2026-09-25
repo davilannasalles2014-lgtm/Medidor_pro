@@ -1,46 +1,27 @@
  // ==========================================================
 // MEDIDOR PRO — app.js
-// Versão corrigida e compatível com o index.html
+// Versão completa e corrigida
 // ==========================================================
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
+  "use strict";
 
-  // ========================================================
-  // FUNÇÃO PARA PEGAR ELEMENTOS
-  // ========================================================
+  const $ = (id) => document.getElementById(id);
 
-  function $(id) {
-    return document.getElementById(id);
-  }
-
-  // ========================================================
   // CÂMERA
-  // ========================================================
-
   const video = $("video");
   const overlay = $("overlay");
   const start = $("start");
   const stop = $("stop");
   const status = $("status");
 
-  let stream = null;
-  let animationFrame = null;
-
-  // ========================================================
   // CALIBRAÇÃO
-  // ========================================================
-
   const refMm = $("refMm");
   const refPx = $("refPx");
   const calibrate = $("calibrate");
   const cal = $("cal");
 
-  let pixelsPerMm = 0;
-
-  // ========================================================
   // MEDIÇÃO
-  // ========================================================
-
   const objPx = $("objPx");
   const unit = $("unit");
   const precision = $("precision");
@@ -49,70 +30,96 @@ document.addEventListener("DOMContentLoaded", function () {
   const modeLabel = $("modeLabel");
   const save = $("save");
 
+  // HISTÓRICO
+  const historyBox = $("history");
+  const clear = $("clear");
+
+  // TEMA
+  const themeToggle = $("themeToggle");
+  const themePanel = $("themePanel");
+
+  // PREMIUM
+  const subscribe = $("subscribe");
+
+  let stream = null;
+  let animationFrame = null;
+  let pixelsPerMm = 0;
   let currentMode = "Largura";
   let lastMeasurementMm = null;
   let lastMeasurementText = "";
 
-  // ========================================================
-  // HISTÓRICO
-  // ========================================================
-
-  const historyBox = $("history");
-  const clear = $("clear");
-
-  // ========================================================
-  // TEMA
-  // ========================================================
-
-  const themeToggle = $("themeToggle");
-  const themePanel = $("themePanel");
-
-  // ========================================================
-  // PREMIUM
-  // ========================================================
-
-  const subscribe = $("subscribe");
-
-  // ========================================================
-  // CÂMERA — ABRIR
-  // ========================================================
-
-  async function openCamera() {
-
-    if (!navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia) {
-
-      if (status) {
-        status.textContent = "Câmera indisponível";
+  // Evita recarregar a página ao clicar nos botões
+  document.querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      if (!button.hasAttribute("type")) {
+        event.preventDefault();
       }
+    });
+  });
 
-      alert(
-        "Seu navegador não permite acesso à câmera."
-      );
+  // ==========================================================
+  // CÂMERA
+  // ==========================================================
 
+  function setCameraStatus(text) {
+    if (status) {
+      status.textContent = text;
+    }
+  }
+
+  function setCameraButtons() {
+    if (start) {
+      start.disabled = !!stream;
+    }
+
+    if (stop) {
+      stop.disabled = !stream;
+    }
+  }
+
+  async function openCamera(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
+    if (!video) {
+      alert("Não foi possível encontrar a área da câmera.");
       return;
     }
 
     if (!window.isSecureContext) {
-
-      if (status) {
-        status.textContent = "HTTPS necessário";
-      }
+      setCameraStatus("HTTPS necessário");
 
       alert(
-        "A câmera precisa de HTTPS.\n\n" +
+        "A câmera precisa de uma conexão segura (HTTPS).\n\n" +
         "Abra o Medidor Pro pelo GitHub Pages."
       );
 
       return;
     }
 
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+      setCameraStatus("Câmera indisponível");
+
+      alert(
+        "Este navegador não disponibilizou acesso à câmera para o site."
+      );
+
+      return;
+    }
+
+    if (stream) {
+      return;
+    }
+
     try {
+      setCameraStatus("Abrindo...");
 
-      closeCamera();
-
-      stream =
-        await navigator.mediaDevices.getUserMedia({
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: {
               ideal: "environment"
@@ -126,167 +133,5 @@ document.addEventListener("DOMContentLoaded", function () {
           },
           audio: false
         });
-
-      video.srcObject = stream;
-
-      video.muted = true;
-      video.playsInline = true;
-
-      await video.play();
-
-      if (start) {
-        start.disabled = true;
-      }
-
-      if (stop) {
-        stop.disabled = false;
-      }
-
-      if (status) {
-        status.textContent = "Ligada";
-      }
-
-      drawOverlay();
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao abrir câmera:",
-        error
-      );
-
-      if (status) {
-        status.textContent = "Permissão negada";
-      }
-
-      alert(
-        "Não foi possível abrir a câmera.\n\n" +
-        "Permita o acesso à câmera quando o celular pedir."
-      );
-    }
-  }
-
-  // ========================================================
-  // CÂMERA — PARAR
-  // ========================================================
-
-  function closeCamera() {
-
-    if (stream) {
-
-      stream.getTracks().forEach(function (track) {
-        track.stop();
-      });
-
-      stream = null;
-    }
-
-    if (video) {
-      video.srcObject = null;
-    }
-
-    if (animationFrame) {
-
-      cancelAnimationFrame(
-        animationFrame
-      );
-
-      animationFrame = null;
-    }
-
-    if (start) {
-      start.disabled = false;
-    }
-
-    if (stop) {
-      stop.disabled = true;
-    }
-
-    if (status) {
-      status.textContent = "Desligada";
-    }
-
-    if (overlay) {
-
-      const ctx =
-        overlay.getContext("2d");
-
-      if (ctx) {
-
-        ctx.clearRect(
-          0,
-          0,
-          overlay.width,
-          overlay.height
-        );
-      }
-    }
-  }
-
-  if (start) {
-    start.addEventListener(
-      "click",
-      openCamera
-    );
-  }
-
-  if (stop) {
-    stop.addEventListener(
-      "click",
-      closeCamera
-    );
-  }
-
-  // ========================================================
-  // LINHAS DE AUXÍLIO DA CÂMERA
-  // ========================================================
-
-  function drawOverlay() {
-
-    if (!video ||
-        !overlay ||
-        !stream) {
-      return;
-    }
-
-    if (
-      video.videoWidth === 0 ||
-      video.videoHeight === 0
-    ) {
-
-      animationFrame =
-        requestAnimationFrame(
-          drawOverlay
-        );
-
-      return;
-    }
-
-    overlay.width =
-      video.videoWidth;
-
-    overlay.height =
-      video.videoHeight;
-
-    const ctx =
-      overlay.getContext("2d");
-
-    if (!ctx) {
-      return;
-    }
-
-    ctx.clearRect(
-      0,
-      0,
-      overlay.width,
-      overlay.height
-    );
-
-    ctx.strokeStyle =
-      "#00e5ff";
-
-    ctx.lineWidth =
-      Math.max(
-        3,
-        overlay.width / 600
-      );
+      } catch (firstError) {
+        console
