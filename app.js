@@ -1,92 +1,272 @@
-const camera = document.getElementById("camera");
-const capture = document.getElementById("capture");
-const startCamera = document.getElementById("startCamera");
-const canvas = document.getElementById("canvas");
+ // Medidor Pro 3.0 — app.js
+// Versão compatível com o index.html atual
 
-const referenceCm = document.getElementById("referenceCm");
-const referencePx = document.getElementById("referencePx");
-const calibrate = document.getElementById("calibrate");
-const calibrationStatus = document.getElementById("calibrationStatus");
+const $ = (id) => document.getElementById(id);
 
-const objectPx = document.getElementById("objectPx");
-const measure = document.getElementById("measure");
-const resultValue = document.getElementById("resultValue");
-const resultInfo = document.getElementById("resultInfo");
-const subscribe = document.getElementById("subscribe");
+// CÂMERA
+const video = $("video");
+const overlay = $("overlay");
+const start = $("start");
+const stop = $("stop");
+const status = $("status");
 
-let pixelsPerCm = null;
 let stream = null;
 
-startCamera.addEventListener("click", async () => {
+// CALIBRAÇÃO
+const refMm = $("refMm");
+const refPx = $("refPx");
+const calibrate = $("calibrate");
+const cal = $("cal");
+
+let pixelsPerMm = 0;
+
+// MEDIÇÃO
+const objPx = $("objPx");
+const unit = $("unit");
+const measure = $("measure");
+const result = $("result");
+const resultInfo = $("resultInfo");
+const save = $("save");
+const modeLabel = $("modeLabel");
+
+let currentMode = "Largura";
+let lastMeasurementMm = 0;
+
+// HISTÓRICO
+const historyBox = $("history");
+const clear = $("clear");
+
+// =========================
+// CÂMERA
+// =========================
+
+async function openCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (resultInfo) {
+      resultInfo.textContent =
+        "A câmera não está disponível neste navegador.";
+    }
+    return;
+  }
+
+  if (!window.isSecureContext) {
+    if (resultInfo) {
+      resultInfo.textContent =
+        "A câmera precisa de HTTPS. No GitHub Pages ela funciona.";
+    }
+    return;
+  }
+
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } },
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 }
+      },
       audio: false
     });
-    camera.srcObject = stream;
-    capture.disabled = false;
-    startCamera.textContent = "Câmera aberta";
+
+    video.srcObject = stream;
+    video.playsInline = true;
+
+    await video.play().catch(() => {});
+
+    start.disabled = true;
+    stop.disabled = false;
+
+    status.textContent = "Ativa";
+
+    if (resultInfo) {
+      resultInfo.textContent =
+        "Câmera ativa. Posicione o objeto e calibre a referência.";
+    }
+
+    drawOverlay();
+
   } catch (error) {
-    alert("Não foi possível abrir a câmera. Verifique a permissão do navegador.");
-  }
-});
+    status.textContent = "Bloqueada";
 
-capture.addEventListener("click", () => {
-  if (!camera.videoWidth) {
-    alert("A câmera ainda não está pronta.");
+    if (resultInfo) {
+      resultInfo.textContent =
+        "Não foi possível abrir a câmera. Permita o acesso à câmera.";
+    }
+  }
+}
+
+function closeCamera() {
+  if (stream) {
+    stream.getTracks().forEach((track) => track.stop());
+    stream = null;
+  }
+
+  video.srcObject = null;
+
+  start.disabled = false;
+  stop.disabled = true;
+
+  status.textContent = "Desligada";
+}
+
+start?.addEventListener("click", openCamera);
+stop?.addEventListener("click", closeCamera);
+
+// =========================
+// LINHA DE AUXÍLIO DA CÂMERA
+// =========================
+
+function drawOverlay() {
+  if (!video.videoWidth || !video.videoHeight) {
+    requestAnimationFrame(drawOverlay);
     return;
   }
 
-  canvas.width = camera.videoWidth;
-  canvas.height = camera.videoHeight;
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
+  overlay.width = video.videoWidth;
+  overlay.height = video.videoHeight;
 
-  resultInfo.textContent =
-    `Imagem capturada: ${canvas.width} × ${canvas.height} pixels. Informe os pixels da referência e do objeto para calcular.`;
-});
+  const ctx = overlay.getContext("2d");
 
-calibrate.addEventListener("click", () => {
-  const cm = Number(referenceCm.value);
-  const px = Number(referencePx.value);
+  ctx.clearRect(0, 0, overlay.width, overlay.height);
 
-  if (!Number.isFinite(cm) || cm <= 0 || !Number.isFinite(px) || px <= 0) {
-    calibrationStatus.textContent = "Informe valores válidos para centímetros e pixels.";
-    return;
-  }
+  ctx.strokeStyle = "#00e5ff";
+  ctx.lineWidth = Math.max(3, overlay.width / 600);
+  ctx.setLineDash([12, 10]);
 
-  pixelsPerCm = px / cm;
-  calibrationStatus.textContent =
-    `Calibrado: ${pixelsPerCm.toFixed(2)} pixels por cm.`;
-});
+  ctx.beginPath();
 
-measure.addEventListener("click", () => {
-  const px = Number(objectPx.value);
+  ctx.moveTo(
+    overlay.width * 0.15,
+    overlay.height * 0.5
+  );
 
-  if (!pixelsPerCm) {
-    resultValue.textContent = "—";
-    resultInfo.textContent = "Faça a calibração primeiro.";
+  ctx.lineTo(
+    overlay.width * 0.85,
+    overlay.height * 0.5
+  );
+
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+
+  requestAnimationFrame(drawOverlay);
+}
+
+// =========================
+// CALIBRAÇÃO
+// =========================
+
+calibrate?.addEventListener("click", () => {
+
+  const mm = Number(refMm?.value);
+  const px = Number(refPx?.value);
+
+  if (!Number.isFinite(mm) || mm <= 0) {
+    cal.textContent =
+      "Informe o tamanho real da referência em mm.";
     return;
   }
 
   if (!Number.isFinite(px) || px <= 0) {
-    resultValue.textContent = "—";
-    resultInfo.textContent = "Informe um valor válido em pixels.";
+    cal.textContent =
+      "Informe quantos pixels correspondem à referência.";
     return;
   }
 
-  const cm = px / pixelsPerCm;
-  resultValue.textContent = cm.toFixed(2);
-  resultInfo.textContent =
-    `Cálculo baseado em ${px} pixels e na calibração atual.`;
-});
+  pixelsPerMm = px / mm;
 
-subscribe.addEventListener("click", () => {
-  alert("A assinatura de R$ 2/mês ainda precisa ser conectada a um serviço de pagamento.");
-});
+  localStorage.setItem(
+    "medidorPixelsPerMm",
+    String(pixelsPerMm)
+  );
 
-window.addEventListener("beforeunload", () => {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
+  cal.textContent =
+    `Calibrado: ${pixelsPerMm.toFixed(3)} pixels/mm`;
+
+  if (resultInfo) {
+    resultInfo.textContent =
+      "Calibração concluída. Agora informe a distância do objeto.";
   }
 });
+
+// Recuperar calibração salva
+const savedCalibration =
+  Number(localStorage.getItem("medidorPixelsPerMm"));
+
+if (
+  Number.isFinite(savedCalibration) &&
+  savedCalibration > 0
+) {
+  pixelsPerMm = savedCalibration;
+
+  if (cal) {
+    cal.textContent =
+      `Calibrado: ${pixelsPerMm.toFixed(3)} pixels/mm`;
+  }
+}
+
+// =========================
+// MODOS
+// =========================
+
+document.querySelectorAll(".mode").forEach((button) => {
+
+  button.addEventListener("click", () => {
+
+    document
+      .querySelectorAll(".mode")
+      .forEach((b) => b.classList.remove("active"));
+
+    button.classList.add("active");
+
+    currentMode =
+      button.dataset.mode || "Largura";
+
+    if (modeLabel) {
+      modeLabel.textContent = currentMode;
+    }
+  });
+
+});
+
+// =========================
+// UNIDADES
+// =========================
+
+const units = {
+
+  mm: {
+    factor: 1,
+    label: "mm",
+    decimals: 1
+  },
+
+  cm: {
+    factor: 0.1,
+    label: "cm",
+    decimals: 2
+  },
+
+  m: {
+    factor: 0.001,
+    label: "m",
+    decimals: 3
+  },
+
+  in: {
+    factor: 1 / 25.4,
+    label: "in",
+    decimals: 2
+  },
+
+  ft: {
+    factor: 1 / 304.8,
+    label: "ft",
+    decimals: 3
+  }
+
+};
+
+function formatMeasurement(mm) {
+
+  const selected =
+    units[
